@@ -13,7 +13,7 @@ i_ext = 10000  # External current (A/m2)
 t_final = 100000
 
 " Thermo-chemical inputs "
-T = 298   # Simulation temperature, K
+T = 300 #500 #298   # Simulation temperature, K
 P_an_0 = 101325 #Pa
 X_k_an_0 = np.array([0.97, 0.03])
 
