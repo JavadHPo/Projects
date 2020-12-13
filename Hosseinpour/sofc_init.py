@@ -1,6 +1,6 @@
-""" Initialize PEMFC model.
+""" Initialize SOFC model.
 
-    For now, we hard-code all inputs.  Eventually, we may move them to a 'pemfc_inputs.py' file.
+    For now, we hard-code all inputs.  Eventually, we may move them to a 'sofc_inputs.py' file.
     
     Read in user inputs, then construct initial solution vector SV_0.  Create a class for all other needed parameters, called 'params.'
 """

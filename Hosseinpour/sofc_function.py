@@ -12,19 +12,30 @@
 """
 
 # Import necessary modules:
-from scipy.integrate import solve_ivp #integration function for ODE system.
+#from scipy.integrate import solve_ivp #integration function for ODE system.
 
 # Either directly in this file, or in a separate file that you import, define: 
 #   - A residual function called 'residual'
 #   - An array 'time_span' which has [0, t_final] where t_final is the total 
 #       length of time you want the model to simulate.
 #   - An intial solution vector SV_0
-solution = solve_ivp(residual, time_span, SV_0,rtol=1e-4, atol=1e-6)
+#solution = solve_ivp(residual, time_span, SV_0,rtol=1e-4, atol=1e-6)
 
 ###########################################
 # Copy-pasted from main model
+from scipy.integrate import solve_ivp
+import numpy as np
+from matplotlib import pyplot as plt
+from math import exp
 
-def pemfc_func(i_ext, SV_0, plot_flag):
+import importlib
+import sofc_init
+importlib.reload(sofc_init)
+from sofc_init import pars
+    
+#from sofc_function import sofc_func
+
+def sofc_func(i_ext, SV_0, plot_flag):
     C_dl_an = 1e4 # F/m2
     C_dl_ca = 1e4 # F/m2
 
@@ -36,7 +47,7 @@ def pemfc_func(i_ext, SV_0, plot_flag):
     beta_ca = 0.5
     beta_an = 0.5
     R = 8.3145
-    T = pars.T #500 #298
+    T = 298
 
     delta_Phi_eq_an = 0.61
     delta_Phi_eq_ca = 0.55
