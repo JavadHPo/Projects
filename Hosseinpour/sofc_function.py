@@ -23,12 +23,13 @@
 
 ###########################################
 # Copy-pasted from main model
-#from scipy.integrate import solve_ivp
-#import numpy as np
-#from matplotlib import pyplot as plt
-#from math import exp
 
-#import importlib
+from scipy.integrate import solve_ivp
+import numpy as np
+from matplotlib import pyplot as plt
+from math import exp
+
+import importlib
 import sofc_init
 importlib.reload(sofc_init)
 from sofc_init import pars
@@ -49,9 +50,10 @@ def sofc_func(i_ext, SV_0, pars, plot_flag):
 
     delta_Phi_eq_an = 0.61
     delta_Phi_eq_ca = 0.55
+    
+#    SV_0 = np.array([phi_elyte_0 - phi_an, phi_ca_0 - phi_elyte_0])
 
-    SV_0 = np.array([phi_elyte_0 - phi_an, phi_ca_0 - phi_elyte_0])
-    time_span = np.array([0,100])
+time_span = np.array([0,100])
 
     # define a derivative. 
     def residual(t,SV):
@@ -79,7 +81,7 @@ def sofc_func(i_ext, SV_0, pars, plot_flag):
     V_elyte = solution.y[0,:]
     V_ca = V_elyte + solution.y[1,:]
     
-        if plot_flag:
+    if plot_flag:
         plt.plot(solution.t,V_elyte)
         plt.plot(solution.t,V_ca)
 
