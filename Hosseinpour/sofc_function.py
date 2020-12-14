@@ -55,41 +55,40 @@ def sofc_func(i_ext, SV_0, pars, plot_flag):
 
 time_span = np.array([0,100])
 
-    # define a derivative. 
-    def residual(t,SV):
-        dSV_dt = np.zeros_like(SV)
+#define a derivative.
 
-        # Anode Interface:
+def residual(t,SV):
+    
+    dSV_dt = np.zeros_like(SV)
+    
+    #Anode Interface:
+        
         eta_an = SV[0] - delta_Phi_eq_an
-        i_Far_an = pars.i_o_an*(exp(-n_an*F*beta_an*eta_an/R/T)
-                          - exp(n_an*F*(1-beta_an)*eta_an/R/T))
+        i_Far_an = pars.i_o_an*(exp(-n_an*F*beta_an*eta_an/R/T)- exp(n_an*F*(1-beta_an)*eta_an/R/T))
         i_dl_an = i_ext - i_Far_an
         dSV_dt[0] = -i_dl_an/pars.C_dl_an
-
+        
         # Cathode Interface:
         eta_ca = SV[1] - delta_Phi_eq_ca
-        i_Far_ca = pars.i_o_ca*(exp(-n_ca*F*beta_ca*eta_ca/R/T)
-                          - exp(n_ca*F*(1-beta_ca)*eta_ca/R/T))
+        i_Far_ca = pars.i_o_ca*(exp(-n_ca*F*beta_ca*eta_ca/R/T)- exp(n_ca*F*(1-beta_ca)*eta_ca/R/T))
         i_dl_ca = i_ext - i_Far_ca
-
-
+        
         dSV_dt[1] = -i_dl_ca/pars.C_dl_ca
         return dSV_dt
-
+    
     solution = solve_ivp(residual,time_span,SV_0,rtol=1e-4, atol=1e-6)
-
+    
     V_elyte = solution.y[0,:]
     V_ca = V_elyte + solution.y[1,:]
     
     if plot_flag:
         plt.plot(solution.t,V_elyte)
         plt.plot(solution.t,V_ca)
-
+        
         plt.xlabel('Time (s)',fontsize=14)
         plt.ylabel('Electric Potential (V)',fontsize=14)
-
         plt.legend([r'$\phi_{\rm elyte}$',r'$\phi_{\rm cathode}$'],fontsize=14,frameon=False)
-   
-    return solution.y[:,-1]
-
-##############################
+        
+        return solution.y[:,-1]
+    
+    ##############################
