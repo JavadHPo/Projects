@@ -51,7 +51,7 @@ def sofc_func(i_ext, SV_0, pars, plot_flag):
     delta_Phi_eq_an = 0.61
     delta_Phi_eq_ca = 0.55
     
-#    SV_0 = np.array([phi_elyte_0 - phi_an, phi_ca_0 - phi_elyte_0])
+    #SV_0 = np.array([phi_elyte_0 - phi_an, phi_ca_0 - phi_elyte_0])
 
 time_span = np.array([0,100])
 

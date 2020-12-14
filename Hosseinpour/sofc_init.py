@@ -46,8 +46,8 @@ phi_elyte_0 = 0.6
 phi_ca_0 = 1.1
 
 " Charge transfer inputs "
-C_dl_an = 1e4 # F/m2
-C_dl_ca = 1e4 # F/m2
+C_dl_an = 0.003 # F/m2
+C_dl_ca = 0.2 # F/m2
 
 i_o_an = 2.5e-3
 i_o_ca = 1e-3
