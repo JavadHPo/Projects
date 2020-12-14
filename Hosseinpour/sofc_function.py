@@ -62,19 +62,18 @@ def residual(t,SV):
     dSV_dt = np.zeros_like(SV)
     
     #Anode Interface:
-        
-        eta_an = SV[0] - delta_Phi_eq_an
-        i_Far_an = pars.i_o_an*(exp(-n_an*F*beta_an*eta_an/R/T)- exp(n_an*F*(1-beta_an)*eta_an/R/T))
-        i_dl_an = i_ext - i_Far_an
-        dSV_dt[0] = -i_dl_an/pars.C_dl_an
-        
-        # Cathode Interface:
-        eta_ca = SV[1] - delta_Phi_eq_ca
-        i_Far_ca = pars.i_o_ca*(exp(-n_ca*F*beta_ca*eta_ca/R/T)- exp(n_ca*F*(1-beta_ca)*eta_ca/R/T))
-        i_dl_ca = i_ext - i_Far_ca
-        
-        dSV_dt[1] = -i_dl_ca/pars.C_dl_ca
-        return dSV_dt
+    eta_an = SV[0] - delta_Phi_eq_an
+    i_Far_an = i_o_an*(exp(-n_an*F*beta_an*eta_an/R/T)- exp(n_an*F*(1-beta_an)*eta_an/R/T))
+    i_dl_an = i_ext - i_Far_an
+    dSV_dt[0] = -i_dl_an/pars.C_dl_an
+    
+    # Cathode Interface:
+    eta_ca = SV[1] - delta_Phi_eq_ca
+    i_Far_ca = i_o_ca*(exp(-n_ca*F*beta_ca*eta_ca/R/T)- exp(n_ca*F*(1-beta_ca)*eta_ca/R/T))
+    i_dl_ca = i_ext - i_Far_ca
+    
+    dSV_dt[1] = -i_dl_ca/pars.C_dl_ca
+    return dSV_dt
     
     solution = solve_ivp(residual,time_span,SV_0,rtol=1e-4, atol=1e-6)
     
@@ -90,5 +89,3 @@ def residual(t,SV):
         plt.legend([r'$\phi_{\rm elyte}$',r'$\phi_{\rm cathode}$'],fontsize=14,frameon=False)
         
         return solution.y[:,-1]
-    
-    ##############################
