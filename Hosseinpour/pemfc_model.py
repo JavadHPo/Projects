@@ -14,7 +14,7 @@
 def pemfc_model(i_ext=None, temp=None):
     # Import necessary modules:
     from scipy.integrate import solve_ivp #integration function for ODE system.
-    from pemfc_function import residual # point the model to the residual function
+    from sofc_function import residual # point the model to the residual function
     from sofc_init import pars, SV_0, ptr
 
     # Parse and overwrite any variables passed to the function call:
