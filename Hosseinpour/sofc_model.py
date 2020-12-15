@@ -11,7 +11,7 @@
             integration, which can be processed as needed to plot or analyze any quantities of interest.
 """
 
-def pemfc_model(i_ext=None, temp=None):
+def sofc_model(i_ext=None, temp=None):
     # Import necessary modules:
     from scipy.integrate import solve_ivp #integration function for ODE system.
     from sofc_function import residual # point the model to the residual function
@@ -40,4 +40,4 @@ def pemfc_model(i_ext=None, temp=None):
 # If you want to run this as a script, doing one-off simulations, this will 
 #    call the pemfc_model function, above
 if __name__ == '__main__':
-    pemfc_model()
+    sofc_model()

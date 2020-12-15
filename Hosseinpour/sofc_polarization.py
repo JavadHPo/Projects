@@ -1,5 +1,5 @@
 import numpy as np
-from pemfc_model import pemfc_model
+from sofc_model import sofc_model
 
 def polarization(T=None):
 #    print("temperature = ", T)
@@ -8,7 +8,7 @@ def polarization(T=None):
 
     for j, current in enumerate(i_array):
 #        print('    i_ext = ',current)
-        solution = pemfc_model(current,T)
+        solution = sofc_model(current,T)
         V_cell[j] = solution.y[-1,-1] - solution.y[0,-1]
 #        print('        V_cell =', V_cell[j])
 
