@@ -1,8 +1,6 @@
 """
     This file runs and executes a simple PEMFC Model, calculating the cell potential as a function of a user-specified current density.
-
     The code structure at this level is meant to be very simple, and delegates most functions to lower-level modules, which can be updated with new capabilties, over time.  The code:
-
         1 - Initializes the model by calling pemfc_init.py
             a - pemfc_init.py reads in the user inputs from pemfc_inputs.py, 
             b - pemfc_init.py then creates an initial solution vector 'SV_0'
@@ -13,15 +11,21 @@
             integration, which can be processed as needed to plot or analyze any quantities of interest.
 """
 
-def pemfc_model(i_ext=None):
+def pemfc_model(i_ext=None, temp=None):
     # Import necessary modules:
     from scipy.integrate import solve_ivp #integration function for ODE system.
     from pemfc_function import residual # point the model to the residual function
-    from sofc_init import pars, SV_0, ptr
+    from pemfc_init import pars, SV_0, ptr
 
     # Parse and overwrite any variables passed to the function call:
     if i_ext:
         pars.i_ext = i_ext
+    if temp:
+        # Adjust concentrations in SV_0:
+        SV_0[ptr.C_k_an_GDL] *= pars.T/temp
+        SV_0[ptr.C_k_an_CL] *= pars.T/temp
+        # Overwrite temperature:
+        pars.T = temp
 
     # The use of the 'lambda' function is required here so that we can pass the 
     #   class variablels 'pars' and 'ptr.'  Otherwise, we can only pass the 
