@@ -1,91 +1,106 @@
+""" Residual for 1D pemfc model.
+        Inputs:
+            t: current simulation time (s).  Required by the integrator, but not used.
+            SV: current state of the PEMFC simulation domain.
+        Returns:   
+            dSV_dt: time derivative of solution vector variables SV.
 """
-    This file runs and executes a youyr model, calculating the cell/device/system properties of interest as a function of time. 
-
-    The code structure at this level is meant to be very simple, and delegates most functions to lower-level modules, which can be updated with new capabilties, over time.  The code:
-
-        1 - Reads inputs and initializes the model
-        
-        2 - Calls the residual function and integrates over the user-defined    
-            time span.
-        3 - The simulation then returns the solution vector at the end of the 
-            integration, which can be processed as needed to plot or analyze any quantities of interest.
-"""
-
-# Import necessary modules:
-#from scipy.integrate import solve_ivp #integration function for ODE system.
-
-# Either directly in this file, or in a separate file that you import, define: 
-#   - A residual function called 'residual'
-#   - An array 'time_span' which has [0, t_final] where t_final is the total 
-#       length of time you want the model to simulate.
-#   - An intial solution vector SV_0
-#solution = solve_ivp(residual, time_span, SV_0,rtol=1e-4, atol=1e-6)
-
-###########################################
-# Copy-pasted from main model
-
-from scipy.integrate import solve_ivp
 import numpy as np
-from matplotlib import pyplot as plt
 from math import exp
 
-import importlib
-import sofc_init
-importlib.reload(sofc_init)
-from sofc_init import pars
-    
-#from sofc_function import sofc_func
+# Constants:
+F = 96485    # Faraday's constant, C/mol of equivalent
+R = 8.3145   # Universal gas constant, J/mol-K
 
-def sofc_func(i_ext, SV_0, pars, plot_flag):
-
-    i_o_an = 2.5
-    i_o_ca = 1
-    n_an = 2
-    n_ca = 4
-    F = 96485
-    beta_ca = 0.5
-    beta_an = 0.5
-    R = 8.3145
-    T = 298
-
-    delta_Phi_eq_an = 0.61
-    delta_Phi_eq_ca = 0.55
-    
-    #SV_0 = np.array([phi_elyte_0 - phi_an, phi_ca_0 - phi_elyte_0])
-
-time_span = np.array([0,100])
-
-#define a derivative.
-
-def residual(t,SV):
-    
+def residual(t, SV, pars, ptr):
+    # Initialize the residual: must be the exact same size as SV.  Initialize 
+    #   as all zeros; that way, a variable will not change with time, if we do 
+    #   not specify a residual.
     dSV_dt = np.zeros_like(SV)
+
+    "========ANODE==========="
+    # Calculate overpotential.
+    # SHOULD BE A FUNCTION OF SPECIES ACTIVITIES:
+    eta_an = SV[ptr.phi_dl_an] - pars.delta_Phi_eq_an 
+
+    # Butler-Vollmer equation:
+    i_Far_an = -pars.i_o_an*(exp(-pars.n_an*F*pars.beta_an*eta_an/R/pars.T)
+                      - exp(pars.n_an*F*(1-pars.beta_an)*eta_an/R/pars.T))
+
+    # Double layer current density (per unit area surface)
+    i_dl_an = -pars.i_ext*pars.A_fac_dl - i_Far_an*pars.f_Pt
+
+    # Change in double layer potential per time:
+    dSV_dt[ptr.phi_dl_an] = -i_dl_an/pars.C_dl_an
+
+    # GDL gas phase:
+    C_k_an_GDL = SV[ptr.C_k_an_GDL]
+    # Catalyst layer gas phase
+    C_k_an_CL = SV[ptr.C_k_an_CL]
+   
+    s1 = {'C_k': C_k_an_GDL, 'dy':pars.dy_GDL, 'eps_g':pars.eps_g_GDL, 
+        'n_Brugg':pars.n_Brugg_GDL, 'd_solid':pars.d_solid_GDL}
+    s2 = {'C_k': C_k_an_CL, 'dy':pars.dy_CL, 'eps_g':pars.eps_g_CL,
+        'n_Brugg':pars.n_Brugg_CL, 'd_solid':pars.d_solid_CL}
+    gas_props = {'T':pars.T, 'D_k':pars.D_k_g_an, 'mu':pars.mu_g_an}
     
-    #Anode Interface:
-    eta_an = SV[0] - delta_Phi_eq_an
-    i_Far_an = i_o_an*(exp(-n_an*F*beta_an*eta_an/R/T)- exp(n_an*F*(1-beta_an)*eta_an/R/T))
-    i_dl_an = i_ext - i_Far_an
-    dSV_dt[0] = -i_dl_an/pars.C_dl_an
+    N_k_i = pemfc_gas_flux(s1, s2, gas_props)
+    # print(N_k_i)
     
-    # Cathode Interface:
-    eta_ca = SV[1] - delta_Phi_eq_ca
-    i_Far_ca = i_o_ca*(exp(-n_ca*F*beta_ca*eta_ca/R/T)- exp(n_ca*F*(1-beta_ca)*eta_ca/R/T))
-    i_dl_ca = i_ext - i_Far_ca
+    # Molar production rates due to Faradaic current:
+    sdot_k = i_Far_an*pars.nu_k_an/pars.n_an/F
     
-    dSV_dt[1] = -i_dl_ca/pars.C_dl_ca
+    # Change in catalyst layer gas phase mole fractions:
+    dCk_dt = (N_k_i + sdot_k*pars.A_fac_Pt)*pars.eps_g_dy_Inv_CL
+    dSV_dt[ptr.C_k_an_CL] = dCk_dt
+    
+
+
+    "========CATHODE==========="
+    " THIS SHOULD EVENTUALLY DEPEND ON SPECIES ACTIVITIES. "
+    eta_ca = SV[ptr.phi_dl_ca] - pars.delta_Phi_eq_ca
+    i_Far_ca = pars.i_o_ca*(exp(-pars.n_ca*F*pars.beta_ca*eta_ca/R/pars.T)
+                      - exp(pars.n_ca*F*(1-pars.beta_ca)*eta_ca/R/pars.T))
+    i_dl_ca = pars.i_ext*pars.A_fac_dl - i_Far_ca*pars.f_Pt
+    
+    dSV_dt[ptr.phi_dl_ca] = -i_dl_ca/pars.C_dl_ca
     return dSV_dt
+
+
+def pemfc_gas_flux(node1, node2, gas_props):
+    N_k  = np.zeros_like(node1['C_k'])
+
+    f1 = node1['dy']/(node1['dy'] + node2['dy'])
+    f2 = 1-f1
+
+    C_int = f1*node1['C_k'] + f2*node2['C_k']
+
+    X_k_1 = node1['C_k']/np.sum(node1['C_k'])
+    X_k_2 = node2['C_k']/np.sum(node2['C_k'])
+    X_k_int = f1*X_k_1 + f2*X_k_2
+
+    P_1 = np.sum(node1['C_k'])*R*gas_props['T']
+    P_2 = np.sum(node2['C_k'])*R*gas_props['T']
+    # print(P_1, P_2)
+
+    eps_g = f1*node1['eps_g'] + f2*node2['eps_g']
+    tau_fac = (f1*node1['eps_g']**node1['n_Brugg'] 
+        + f2*node2['eps_g']**node2['n_Brugg'])
+    D_k_eff = eps_g*gas_props['D_k']/tau_fac
+    # print(f2, f1)
+    # print(tau_fac)
+    # print(f1*node1['eps_g']**node1['n_Brugg'])
     
-    solution = solve_ivp(residual,time_span,SV_0,rtol=1e-4, atol=1e-6)
-    
-    V_elyte = solution.y[0,:]
-    V_ca = V_elyte + solution.y[1,:]
-    
-    if plot_flag:
-        plt.plot(solution.t,V_elyte)
-        plt.plot(solution.t,V_ca)
-        
-        plt.xlabel('Time (s)',fontsize=14)
-        plt.ylabel('Electric Potential (V)',fontsize=14)
-        plt.legend([r'$\phi_{\rm elyte}$',r'$\phi_{\rm cathode}$'],fontsize=14,frameon=False)
-        
-        return solution.y[:,-1]
+    d_part = f1*node1['d_solid'] + f2*node2['d_solid']
+    K_g = eps_g**3*d_part**2*tau_fac**(-2)*(1-eps_g)**(-2)/72
+
+    dY = 0.5*(node1['dy'] + node2['dy'])
+
+    V_conv = -K_g*(P_2 - P_1)/dY/gas_props['mu']
+    V_k_diff = -D_k_eff*(X_k_2 - X_k_1)/dY/X_k_int
+
+    V_k  = V_conv + V_k_diff
+
+    N_k = C_int*X_k_int*V_k
+
+    return N_k
