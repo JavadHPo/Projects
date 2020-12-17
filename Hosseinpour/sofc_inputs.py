@@ -1,34 +1,64 @@
 # Inputs:
 
-C_rate = 0.1 # How many charges per hour?
+import numpy as np
 
-T = 298 #K
+save_tag = 'porosity_study'
+i_ext = 10000  # External current (A/m2)
 
-r_p_an = 4e-6 #m
-phi_an_0 = 0 #V
-C_dl_an = 1e4 #F/m2
-i_o_an = 4.0  #A/m2
-n_an = -1
-beta_an = 0.5
-H_an = 30e-6  #m
-density_graphite = 2260 #kg/m3
-capacity_graphite = 350 #Ah/kg
-eps_graphite = .65
-dPhi_eq_an = -1.6
+t_final = 100000
 
-phi_sep_0 = 1.8  #V
+" Thermo-chemical inputs "
+T = 300 #500 #298   # Simulation temperature, K
+P_an_0 = 101325 #Pa
+X_k_an_0 = np.array([0.97, 0.03])
 
-r_p_ca = 0.3e-6 #m
-phi_ca_0 = 4.6  #V
-C_dl_ca = 1e4 #F/m2
-i_o_ca = 100 #A/m2
-n_ca = -1
+" Microstructure and geometry "
+eps_gas_GDL = 0.7 # Gas phase volume fraction in GDL
+
+eps_solid_CL = 0.6 # Volume fraction of solids (Pt +C) in CL
+eps_gas_CL = 0.28  # Volume fraction of gas in CL
+
+# Exponent in the Bruggeman correlatin: tau_fac = eps^alpha
+alpha_Brugg_GDL = -1
+alpha_Brugg_CL = -0.5
+
+Pt_surf_frac = 0.1 # Fraction of carbon surface covered by Pt in CL.
+
+dy_GDL = 100e-6 # GDL thickness (m)
+dy_CL = 20e-6   # CL thickness (m)
+
+# Carbon particle diameter:
+d_part_GDL = 5e-6 # m
+d_part_CL = 100e-9 # m
+
+" Transport properties"
+D_k_g_an = np.array([5.48e-4, 6.13e-5]) #Mixture-averaged diffusion coeffs, m2/s
+mu_g_an = 9.54e-6                       # Dynamic viscsity, Pa-s
+
+" Initial electric potential values "
+phi_an_0 = 0
+phi_elyte_0 = 0.6
+phi_ca_0 = 1.1
+
+" Charge transfer inputs "
+C_dl_an = 0.003 # F/m2
+C_dl_ca = 0.2 # F/m2
+
+i_o_an = 2.5e-3
+i_o_ca = 1e-3
+
+n_an = -2.
+n_ca = 4
+
+F = 96485
+R = 8.3145
+
+# Charge transfer stoichiometric coefficients:
+# Must be in same order as X_k_an:
+nu_k_an = np.array([-1., 0.])
+
 beta_ca = 0.5
-H_ca = 50e-6  #m
-density_LCO = 2292  #kg/m3
-capacity_LCO = 175  #Ah/kg
-eps_LCO = 0.65
-dPhi_eq_ca = 2.6
+beta_an = 0.5
 
-# How deep do we want to charge/discharge?
-charge_frac = 0.9
+delta_Phi_eq_an = -0.61
+delta_Phi_eq_ca = 0.55
