@@ -1,7 +1,7 @@
-""" Residual for 1D pemfc model.
+""" Residual for 1D sofc model.
         Inputs:
             t: current simulation time (s).  Required by the integrator, but not used.
-            SV: current state of the PEMFC simulation domain.
+            SV: current state of the SOFC simulation domain.
         Returns:   
             dSV_dt: time derivative of solution vector variables SV.
 """
