@@ -8,7 +8,7 @@ i_ext = 10000  # External current (A/m2)
 t_final = 100000
 
 " Thermo-chemical inputs "
-T = 300 #500 #298   # Simulation temperature, K
+T = 800 #500 #298   # Simulation temperature, K
 P_an_0 = 101325 #Pa
 X_k_an_0 = np.array([0.97, 0.03])
 
@@ -60,5 +60,10 @@ nu_k_an = np.array([-1., 0.])
 beta_ca = 0.5
 beta_an = 0.5
 
-delta_Phi_eq_an = -0.61
-delta_Phi_eq_ca = 0.55
+g_circ_H2O = -253154.26 #J/mol
+g_circ_H2 = 0
+g_circ_O2_m = -138451.34 #J/mol
+g_circ_O2 = 0
+
+#delta_Phi_eq_an = -0.61
+#delta_Phi_eq_ca = 0.55

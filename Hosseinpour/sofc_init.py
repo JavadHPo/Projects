@@ -6,6 +6,14 @@
 from sofc_inputs import *
 import numpy as np
 
+#Adding equilibrium potential calculations
+
+DeltaG_circ_an = g_circ_H2O - g_circ_H2 - g_circ_O2_m
+delta_Phi_eq_an = -DeltaG_circ_an/(n_an*F) #-0.61
+
+DeltaG_circ_ca = 2*g_circ_O2_m - g_circ_O2
+delta_Phi_eq_ca = -DeltaG_circ_ca/(n_ca*F) #0.55
+
 "============ INITIALIZE SOLUTION VECTOR ============"
 C_k_an_CL_0 = P_an_0*X_k_an_0/R/T
 
